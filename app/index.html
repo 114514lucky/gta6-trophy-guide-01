@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leonida Platinum Log — GTA VI Trophy Guide &amp; Tracker</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="mark">LP</span>
+    <div><h1>Leonida Platinum Log</h1>
+    <p class="sub">GTA VI &middot; PlayStation 5 &middot; 55 trophies &middot; every step cited</p></div>
+  </div>
+  <div class="top-right">
+    <div class="progress-wrap"><div class="progress-line"><strong id="earnedCount">0 / 55 earned</strong><span id="gradeCounts"></span></div>
+    <div class="bar"><div id="progressBar"></div></div></div>
+    <label class="spoiler"><input type="checkbox" id="spoilerToggle"> Spoiler shield</label>
+    <button id="exportBtn" type="button">Export</button>
+    <button id="importBtn" type="button">Import</button>
+    <input id="importFile" type="file" accept="application/json" hidden>
+    <span class="saved">&#10003; Saved in this browser</span>
+  </div>
+</header>
+<div class="audit" id="auditStrip">Loading trophy data&hellip;</div>
+<nav class="tabs" id="tabs">
+  <button type="button" data-view="tracker" class="active">Tracker</button>
+  <button type="button" data-view="roadmap">Roadmap</button>
+  <button type="button" data-view="missables">Missables</button>
+  <button type="button" data-view="sources">Sources</button>
+</nav>
+<div class="filters" id="filters"></div>
+<main class="grid">
+  <section class="list-col" id="listCol" aria-label="Trophy list"></section>
+  <section class="detail-col" id="detailCol" aria-label="Selected trophy guide"></section>
+  <aside class="rail-col" id="railCol" aria-label="Roadmap and sources"></aside>
+</main>
+<footer class="foot">Offline guide in your own words: no network requests, no Rockstar logo or artwork. Official trophy names and descriptions are shown as PlayStation publishes them; every guide step names its source. Sources read 20&ndash;21 Nov 2026.</footer>
+<script type="module" src="app.js"></script>
+</body>
+</html>
