@@ -1,6 +1,7 @@
 // Leonida Platinum Log: offline GTA VI trophy guide and tracker.
 // Loads its own data files only, saves progress in localStorage, exports and imports it.
 const STORE_KEY = 'leonida-platinum-log-v1';
+const DEMO_STORE_KEY = 'leonida-platinum-log-demo-v1';
 const DEMO_EARNED = ['Just Like Paradise', 'Paradise Lost', 'T**s Ass Drug Money', 'Vice City, Baby!', 'Top Of The World, Ma', 'Trust', 'Master of None', 'Baited My Tackle', 'Stick Fiddler', 'Whip It Good', 'Treat Yo Self'];
 const DEMO_COUNTS = { 15: 120, 17: 20, 28: 6, 30: 1, 31: 40, 32: 25 };
 
@@ -13,6 +14,7 @@ const spoilerToggle = document.getElementById('spoilerToggle');
 
 let guideData = null;
 let metaData = null;
+let activeStoreKey = STORE_KEY;
 let state = loadProgress();
 let selectedId = 28;
 let currentFilter = 'all';
@@ -21,7 +23,7 @@ let searchQuery = '';
 
 function loadProgress() {
   try {
-    const saved = JSON.parse(localStorage.getItem(STORE_KEY) ?? 'null');
+    const saved = JSON.parse(localStorage.getItem(activeStoreKey) ?? 'null');
     if (saved && Array.isArray(saved.earned)) {
       return { earned: new Set(saved.earned), counts: saved.counts ?? {}, spoiler: saved.spoiler ?? true };
     }
@@ -30,7 +32,7 @@ function loadProgress() {
 }
 
 function saveProgress() {
-  localStorage.setItem(STORE_KEY, JSON.stringify({
+  localStorage.setItem(activeStoreKey, JSON.stringify({
     earned: [...state.earned], counts: state.counts, spoiler: state.spoiler,
   }));
 }
@@ -65,7 +67,7 @@ function renderAuditStrip() {
   const hidden = guideData.trophies.filter((t) => t.hidden).length;
   const unconfirmed = guideData.trophies.filter((t) => t.guide.includes('UNCONFIRMED')).length;
   const missable = guideData.trophies.filter((t) => t.missable).length;
-  auditStrip.innerHTML = `AUDIT &nbsp;<b>55/55</b> official name, description, grade &nbsp;<span class="ok">&#10003;</span> 1P 2G 6S 46B &nbsp;<span class="ok">&#10003;</span> ${hidden} PSN-hidden &nbsp;<span class="ok">&#10003;</span> <b>${cited}/${steps.length}</b> steps cited &nbsp;<span class="ok">&#10003;</span> <span class="warn">${missable} possibly missable</span> &middot; <span class="warn">${unconfirmed} unconfirmed</span> &middot; 0 online &middot; ${metaData.sources.length} sources read 20&ndash;21 Nov 2026`;
+  auditStrip.innerHTML = `AUDIT &nbsp;<b>55/55</b> official name, description, grade &nbsp;<span class="ok">&#10003;</span> 1P 2G 6S 46B &nbsp;<span class="ok">&#10003;</span> ${hidden} PSN-hidden &nbsp;<span class="ok">&#10003;</span> <b>${cited}/${steps.length}</b> steps cited &nbsp;<span class="ok">&#10003;</span> <span class="warn">${missable} possibly missable</span> &middot; <span class="warn">${unconfirmed} unconfirmed in this guide</span> &middot; 0 online &middot; ${metaData.sources.length} sources read 20&ndash;21 Nov 2026`;
 }
 
 function filterDefinitions() {
@@ -110,7 +112,7 @@ function visibleTrophies() {
   const fn = defs[currentFilter] ?? (() => true);
   const q = searchQuery.trim().toLowerCase();
   return guideData.trophies
-    .filter((t) => fn(t) && (!q || `${t.name} ${t.description}`.toLowerCase().includes(q)))
+    .filter((t) => fn(t) && (!q || (!isMasked(t) && `${t.name} ${t.description}`.toLowerCase().includes(q))))
     .sort((a, b) => a.stage - b.stage || a.id - b.id);
 }
 
@@ -210,7 +212,7 @@ function renderGuideDetail() {
   if (t.missable) {
     const banner = document.createElement('div');
     banner.className = 'banner miss';
-    banner.innerHTML = '<b>POSSIBLY MISSABLE — LAST CHANCE.</b> The Chapter 1 balcony meditation exists only in Chapter 1, and no page has tested the trophy without it. Do it first, keep a Chapter 1 save, and do not rely on a second playthrough.';
+    banner.innerHTML = '<b>POSSIBLY MISSABLE — LAST CHANCE.</b> PowerPyx [3] reports the Chapter 1 balcony meditation may be the only chance for this trophy, and no page has tested the trophy without it. Do it first, keep a Chapter 1 save, and do not rely on a second playthrough.';
     detailCol.append(banner);
   }
   if (!masked && t.guide.includes('UNCONFIRMED')) {
@@ -400,7 +402,7 @@ function renderMissablesView() {
   detailCol.prepend(h);
   const watch = document.createElement('div');
   watch.className = 'rail-card';
-  watch.innerHTML = '<h4>Watch, not missable — stranger chains</h4><p>TechWiser (via eGamers / games.gg) reports the five stranger chains have windows tied to story progress. Not confirmed as missable by any other source, so this guide lists it as a watch item, not a missable.</p><h4>Everything else</h4><p>All 54 other trophies are earnable in free roam after the story (PushSquare). No online trophies exist, so nothing needs multiplayer.</p>';
+  watch.innerHTML = '<h4>Watch, not missable — stranger chains</h4><p>TechWiser (via eGamers / games.gg) reports the five stranger chains have windows tied to story progress. Not confirmed as missable by any other source, so this guide lists it as a watch item, not a missable.</p><h4>Everything else</h4><p>All 54 other trophies are earnable in free roam after the story (GTABase [10]). No online trophies exist, so nothing needs multiplayer.</p>';
   detailCol.append(watch);
 }
 
@@ -484,12 +486,15 @@ function applyShotParams() {
   const shot = params.get('shot');
   const demo = params.get('demo') === '1';
   if (demo) {
+    activeStoreKey = DEMO_STORE_KEY;
+    state = loadProgress();
     state.earned = new Set(DEMO_EARNED);
     state.counts = { ...DEMO_COUNTS };
     saveProgress();
   }
   if (params.get('spoiler') === '0') state.spoiler = false;
   if (params.get('spoiler') === '1') state.spoiler = true;
+  if (demo) saveProgress();
   const select = Number(params.get('select'));
   if (Number.isInteger(select) && trophyById(select)) selectedId = select;
   if (shot === 'roadmap') currentView = 'roadmap';
